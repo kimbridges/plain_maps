@@ -1,0 +1,15 @@
+Package: plain_maps
+Type: Package
+Title: Create plain maps with overlays
+Version: 0.0.1.0
+RoxygenNote: 7.3.1
+Imports:
+        dplyr,
+        sitemaps,
+        ggmap,
+        readr,
+        ggplot2,
+        gt,
+        mapdata,
+        sf
+        
