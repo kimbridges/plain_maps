@@ -1,4 +1,4 @@
-Package: plain_maps
+Package: plainmaps
 Type: Package
 Title: Create plain maps with overlays
 Version: 0.0.1.0
