@@ -6,8 +6,7 @@
 ## find_closest
 ## complete_outline
 ## UTM_convert
-## show_overlay
-## show_detail
+## gmap_bb
 
 ###################################################
 
@@ -210,96 +209,27 @@ UTM_convert <- function(location,
 
 ###################################################
 
-show_overlay <- function(polygon, cc, 
-                         p_linewidth= 0.5,
-                         p_color="black",
-                         p_fill="gray80",
-                         p_alpha=1.0,
-                         c_linewidth= 0.7,
-                         c_color="red",
-                         c_fill="darkseagreen3",
-                         c_alpha=0.3){
-  
-  ## Define the cut-out polygon as a data frame.
-  cut_lon <- c(cc$lon[1], cc$lon[2], cc$lon[2], cc$lon[1])
-  cut_lat <- c(cc$lat[1], cc$lat[1], cc$lat[2], cc$lat[2])
-  cut_poly <- data.frame(cbind(cut_lon, cut_lat))
-  colnames(cut_poly) <- c("lon", "lat")
-  
-  ## Convert the cut-out polygon to the sf format.
-  o_cut <- cut_poly %>%
-    st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
-    summarise(geometry = st_combine(geometry)) %>%
-    st_cast("POLYGON")
-  
-  ## Convert the overview outline to the sf format.
-  o_polygon <- overview_outline %>%
-    st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-    summarise(geometry = st_combine(geometry)) %>%
-    st_cast("POLYGON")
-  
-  ## Create a plot with the cut-out on top of the outline.
-  overview_plot <- ggplot() +
-    geom_sf(data=o_polygon, 
-            linewidth=p_linewidth,
-            color=p_color,
-            fill=p_fill,
-            alpha=p_alpha) +
-    geom_sf(data=o_cut, 
-            linewidth=c_linewidth,
-            color=c_color,
-            fill=c_fill,
-            alpha=c_alpha)
-  
-  return(overview_plot)
-  
-} ## End function show_overlay
+## Function that extracts the bounding box from a
+## map created using site_google_map and returns
+## the result as a rectangular bounding box
 
-###################################################
+gmap_bb <- function(gmap) {
+  
+## Get the bounding box from the map created
+## with site_google_basemap.
+## This uses the ggmap function bb2bbox.
+bbox <- bb2bbox(attr(gmap, "bb"))
 
-show_detail <- function(polygon, cc, 
-                        p_linewidth= 0.5,
-                        p_color="black",
-                        p_fill="gray80",
-                        p_alpha=1.0) {
-  
-  ## Define the cut-out polygon as a data frame.
-  cut_lon <- c(cc$lon[1], cc$lon[2], cc$lon[2], cc$lon[1])
-  cut_lat <- c(cc$lat[1], cc$lat[1], cc$lat[2], cc$lat[2])
-  cut_poly <- data.frame(cbind(cut_lon, cut_lat))
-  colnames(cut_poly) <- c("lon", "lat")
-  
-  ## Convert the cut-out polygon to the sf format.
-  o_cut <- cut_poly %>%
-    st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
-    summarise(geometry = st_combine(geometry)) %>%
-    st_cast("POLYGON")
-  
-  ## Convert the detail outline to the sf format
-  d_polygon <- polygon %>%
-    st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
-    summarise(geometry = st_combine(geometry)) %>%
-    st_cast("POLYGON")
-  
-  ## Crop out the cut-outline from the detail outline.
-  detail_cropped <- st_intersection(o_cut, d_polygon)
-  
-  ## Extract lat,lon coordinates of the cropped detail outline.
-  d_geometry <- data.frame(st_coordinates(st_cast(detail_cropped$geometry,
-                                                  "POLYGON")))
-  
-  ## Plot the coordinate data. Note use of xlim, ylim.
-  detail_plot <- ggplot(data=d_geometry, aes(x=X, y=Y)) +
-    geom_polygon(fill      = p_fill,
-                 color     = p_color,
-                 linewidth = p_linewidth,
-                 alpha     = p_alpha) +
-    xlim(cut_lon[[1]], cut_lon[[2]]) + 
-    ylim(cut_lat[[2]], cut_lat[[3]]) +
-    coord_fixed(1.1)
-  
-  return(detail_plot)
-  
-} ## End function show_detail
+## Put the values into an appropriate format.
+lon <- c(bbox[1], bbox[3])
+lat <- c(bbox[2], bbox[4])
+range <- data.frame(cbind(lon,lat))
+
+## Make the range points into a polygon.
+box_poly <- corner2poly(range)
+
+return(box_poly)
+
+} ## End gmap_bb
 
 ###################################################

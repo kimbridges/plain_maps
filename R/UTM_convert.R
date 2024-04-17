@@ -34,8 +34,8 @@ UTM_convert <- function(location,
   c_location <- cbind(long,lat)
   c_location <- data.frame(c_location)
   
-  ## Use the OCE package function to do the conversion
-  lon_lat <- OCE::utm2lonlat(c_location$long, 
+  ## Use the oce package function to do the conversion
+  lon_lat <- oce::utm2lonlat(c_location$long, 
                         c_location$lat, 
                         zone       = zone, 
                         hemisphere = hemisphere, 
